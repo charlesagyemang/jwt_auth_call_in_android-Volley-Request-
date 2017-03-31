@@ -3,17 +3,32 @@ package com.example.pianoafrik.volleytest.model;
 
 public class Feed {
 
+
+
+    private int id;
     private String body;
     private String picture;
     private String mesterId;
     private String time;
 
-    public Feed(String body, String picture, String mesterId, String time) {
+
+    public Feed(int id, String body, String picture, String mesterId, String time) {
+        this.id = id;
         this.body = body;
         this.picture = picture;
         this.mesterId = mesterId;
         this.time = time;
     }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
 
     public String getBody() {
         return body;

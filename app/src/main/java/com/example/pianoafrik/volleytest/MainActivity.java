@@ -3,7 +3,9 @@ package com.example.pianoafrik.volleytest;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.View;
 import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        List<Feed> feedList = new ArrayList<>();
+        final List<Feed> feedList = new ArrayList<>();
 
         listView = (ListView) findViewById(R.id.list_item);
         final FeedsAdapter adapter = new FeedsAdapter(this, 0, feedList);
@@ -67,13 +69,15 @@ public class MainActivity extends AppCompatActivity {
                         //hello.setText(response);
 
                         try {
-                            String body, image, mestId, time;
+                            String  body, image, mestId, time;
+                            int id;
                             JSONArray jsonArray = new JSONArray(response);
 
                             for(int i = 0; i < jsonArray.length(); i++){
 
 
                                 JSONObject JO = jsonArray.getJSONObject(i);
+                                id = JO.getInt("id");
                                 body = JO.getString("body");
                                 image = JO.getString("picture");
                                 mestId = JO.getString("mester_id");
@@ -81,8 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                                Feed feed = new Feed(body, image, mestId, time);
-                                //feedList.add(feed);
+                                Feed feed = new Feed(id, body, image, mestId, time);
                                 adapter.add(feed);
 
 
@@ -110,6 +113,15 @@ public class MainActivity extends AppCompatActivity {
         queue.add(stringRequest);
 
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Feed feeds = feedList.get(position);
+
+                Toast.makeText(view.getContext(), String.valueOf(feeds.getId()), Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
     }
 }
