@@ -1,5 +1,6 @@
 package com.example.pianoafrik.volleytest;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.add_new:
-                Toast.makeText(this, "add", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(this, PostActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
