@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -35,7 +36,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView hello;
+    String appToken;
     ListView listView;
 
 
@@ -52,69 +53,184 @@ public class MainActivity extends AppCompatActivity {
         final FeedsAdapter adapter = new FeedsAdapter(this, 0, feedList);
         listView.setAdapter(adapter);
 
-
-        Map<String, String> headers =  new HashMap<>();
-
-        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhcHBfaWQiOjEsImV4cCI6MTQ5MTA1MjMyN30.eOAhtsVLTrJm1lVCB0uYtLNFzNW5r8lcQn3JMiQVLoM";
-        String auth = "Bearer " + token;
-        headers.put("Authorization: ", auth);
-
-
-        // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://mestapi-staging.herokuapp.com/api/v1/post";
+        StringRequest sr = new StringRequest(Request.Method.POST,"https://mestapi-staging.herokuapp.com/authenticate", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+//                mPostCommentResponse.requestCompleted();
+                //hello.setText(response);
+                Toast.makeText(MainActivity.this, response, Toast.LENGTH_LONG).show();
+                try {
 
-
-        // Request a string response from the provided URL.
-        CustomStringRequest stringRequest = new CustomStringRequest(Request.Method.GET, url, headers,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        //hello.setText(response);
-
-                        try {
-                            String  body, image, mestId, time;
-                            int id;
-                            JSONArray jsonArray = new JSONArray(response);
-
-                            for(int i = 0; i < jsonArray.length(); i++){
-
-
-                                JSONObject JO = jsonArray.getJSONObject(i);
-                                id = JO.getInt("id");
-                                body = JO.getString("body");
-                                image = JO.getString("picture");
-                                mestId = JO.getString("mester_id");
-                                time = JO.getString("created_at");
+                    JSONObject JO = new JSONObject(response);
+                    appToken = JO.getString("app_token");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
 
 
-                                Feed feed = new Feed(id, body, image, mestId, time);
-                                adapter.add(feed);
+                Map<String, String> headers =  new HashMap<>();
 
 
+                String auth = "Bearer " + appToken;
+                headers.put("Authorization: ", auth);
+
+
+
+                String url = "https://mestapi-staging.herokuapp.com/api/v1/post";
+
+
+                // Request a string response from the provided URL.
+                CustomStringRequest stringRequest = new CustomStringRequest(Request.Method.GET, url, headers,
+                        new Response.Listener<String>() {
+
+                            @Override
+                            public void onResponse(String response) {
+                                //hello.setText(response);
+
+                                try {
+                                    String  body, image, mestId, time;
+                                    int id;
+                                    JSONArray jsonArray = new JSONArray(response);
+
+                                    for(int i = 0; i < jsonArray.length(); i++){
+
+
+                                        JSONObject JO = jsonArray.getJSONObject(i);
+                                        id = JO.getInt("id");
+                                        body = JO.getString("body");
+                                        image = JO.getString("picture");
+                                        mestId = JO.getString("mester_id");
+                                        time = JO.getString("created_at");
+
+
+
+                                        Feed feed = new Feed(id, body, image, mestId, time);
+                                        adapter.add(feed);
+
+
+
+                                    }
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                //Toast.makeText(MainActivity.this, String.valueOf(feedList.size()), Toast.LENGTH_LONG).show();
 
                             }
+                        },
+                        new Response.ErrorListener() {
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
 
-                        //Toast.makeText(MainActivity.this, String.valueOf(feedList.size()), Toast.LENGTH_LONG).show();
+                                //hello.setText(error.toString());
+                                Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_LONG).show();
+                            }
 
-                    }
-                }, new Response.ErrorListener() {
+
+
+                        });
+
+
+
+
+
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+//                mPostCommentResponse.requestEndedWithError(error);
                 //hello.setText(error.toString());
             }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("email", "opokuagyemangcharles@gmail.com");
+                params.put("password","12345678");
+                return params;
+            }
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Content-Type","application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+        queue.add(sr);
 
 
 
-        });
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+
+//        Map<String, String> headers =  new HashMap<>();
+//
+//
+//        String auth = "Bearer " + appToken;
+//        headers.put("Authorization: ", auth);
+//
+//
+//        // Instantiate the RequestQueue.
+//        RequestQueue queue2 = Volley.newRequestQueue(this);
+//        String url = "https://mestapi-staging.herokuapp.com/api/v1/post";
+//
+//
+//        // Request a string response from the provided URL.
+//        CustomStringRequest stringRequest = new CustomStringRequest(Request.Method.GET, url, headers,
+//                new Response.Listener<String>() {
+//
+//                    @Override
+//                    public void onResponse(String response) {
+//                        //hello.setText(response);
+//
+//                        try {
+//                            String  body, image, mestId, time;
+//                            int id;
+//                            JSONArray jsonArray = new JSONArray(response);
+//
+//                            for(int i = 0; i < jsonArray.length(); i++){
+//
+//
+//                                JSONObject JO = jsonArray.getJSONObject(i);
+//                                id = JO.getInt("id");
+//                                body = JO.getString("body");
+//                                image = JO.getString("picture");
+//                                mestId = JO.getString("mester_id");
+//                                time = JO.getString("created_at");
+//
+//
+//
+//                                Feed feed = new Feed(id, body, image, mestId, time);
+//                                adapter.add(feed);
+//
+//
+//
+//                            }
+//
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                        //Toast.makeText(MainActivity.this, String.valueOf(feedList.size()), Toast.LENGTH_LONG).show();
+//
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//
+//                        //hello.setText(error.toString());
+//                        Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_LONG).show();
+//                    }
+//
+//
+//
+//        });
+//        // Add the request to the RequestQueue.
+//        queue2.add(stringRequest);
 
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -126,6 +242,10 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
+
+
 
     }
 
