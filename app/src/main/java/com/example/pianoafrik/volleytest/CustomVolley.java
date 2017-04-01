@@ -12,9 +12,6 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-/**
- * Created by pianoafrik on 3/30/17.
- */
 
 public class CustomVolley extends Request<JSONObject> {
 

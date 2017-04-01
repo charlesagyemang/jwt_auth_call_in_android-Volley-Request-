@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         final FeedsAdapter adapter = new FeedsAdapter(this, 0, feedList);
         listView.setAdapter(adapter);
 
-        //hello = (TextView) findViewById(R.id.hello);
+
         Map<String, String> headers =  new HashMap<>();
 
         String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhcHBfaWQiOjEsImV4cCI6MTQ5MTA1MjMyN30.eOAhtsVLTrJm1lVCB0uYtLNFzNW5r8lcQn3JMiQVLoM";
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://mestapi-staging.herokuapp.com/api/v1/posts";
+        String url = "https://mestapi-staging.herokuapp.com/api/v1/post";
 
 
         // Request a string response from the provided URL.
