@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">VolleyTest</string>
+    <string name="APP_TOKEN">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhcHBfaWQiOjEsImV4cCI6MTUyMjYxMzk5Mn0.pzs5xyToFOtxx4sMkv9FN3NM8Kp3YrwEBk8aeXwOIUE</string>
 </resources>
