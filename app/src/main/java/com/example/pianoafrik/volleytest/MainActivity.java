@@ -37,6 +37,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
+    final List<Feed> feedList = new ArrayList<>();
 
 
 
@@ -45,8 +46,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        final List<Feed> feedList = new ArrayList<>();
 
         listView = (ListView) findViewById(R.id.list_item);
         final FeedsAdapter adapter = new FeedsAdapter(this, 0, feedList);
@@ -60,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://mestapi-staging.herokuapp.com/api/v1/posts";
+        String url = "https://mestapi-staging.herokuapp.com/api/v1/feeds";
 
 
         // Request a string response from the provided URL.
@@ -78,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
                             for(int i = 0; i < jsonArray.length(); i++){
 
-
                                 JSONObject JO = jsonArray.getJSONObject(i);
                                 id = JO.getInt("id");
                                 body = JO.getString("body");
@@ -89,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
 
                                 Feed feed = new Feed(id, body, image, mestId, time);
-                                adapter.add(feed);
+//                                feedList.add(0, feed);
+                                adapter.insert(feed, 0);
 
 
 
@@ -122,13 +121,11 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Feed feeds = feedList.get(position);
+                Feed feed = feedList.get(position);
 
-                Toast.makeText(view.getContext(), String.valueOf(feeds.getId()), Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(view.getContext(), String.valueOf(feed.getId()) + "\n" + feed.getTime() , Toast.LENGTH_LONG).show();
             }
         });
-
 
 
 

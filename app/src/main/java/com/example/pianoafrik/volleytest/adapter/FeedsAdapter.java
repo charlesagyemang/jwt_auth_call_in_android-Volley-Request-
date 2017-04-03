@@ -2,9 +2,12 @@ package com.example.pianoafrik.volleytest.adapter;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +17,8 @@ import android.widget.TextView;
 
 import com.example.pianoafrik.volleytest.R;
 import com.example.pianoafrik.volleytest.model.Feed;
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 
@@ -64,9 +69,23 @@ public class FeedsAdapter extends ArrayAdapter<Feed> {
         viewHolder.body.setText(feed.getBody());
         viewHolder.mestId.setText(feed.getMesterId());
         viewHolder.time.setText(feed.getTime());
+        //TODO:load image into picasso for {viewHolder.image}
+        Picasso.with(getContext())
+                .load(feed.getPicture())
+                .into(viewHolder.image);
+
 
 
         return  convertView;
+
+    }
+
+    public Bitmap getBitmapFromEncodedString (String encodedString){
+        //Decode.
+        byte[] decodedString = Base64.decode(encodedString.getBytes(), Base64.DEFAULT);
+        //get a bitmap from from the decoded string
+        Bitmap decodedByte   = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        return  decodedByte;
 
     }
 }

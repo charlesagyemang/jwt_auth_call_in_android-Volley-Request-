@@ -1,8 +1,11 @@
 package com.example.pianoafrik.volleytest;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -21,6 +24,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.example.pianoafrik.volleytest.model.Feed;
+import com.example.pianoafrik.volleytest.model.FeedPost;
 import com.example.pianoafrik.volleytest.model.Post;
 import com.vansuita.pickimage.bean.PickResult;
 import com.vansuita.pickimage.bundle.PickSetup;
@@ -32,7 +39,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -47,11 +58,21 @@ public class PostActivity extends AppCompatActivity implements IPickResult {
     ImageView image;
     Bitmap bitmap;
     Button postRequest;
+    File imageResult;
+    Uri uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
+
+
+
+        if (android.os.Build.VERSION.SDK_INT > 9)
+        {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
 
         body  = (EditText)findViewById(R.id.body);
         image = (ImageView) findViewById(R.id.image);
@@ -68,23 +89,49 @@ public class PostActivity extends AppCompatActivity implements IPickResult {
         });
 
         postRequest.setOnClickListener(new View.OnClickListener() {
+            String picture;
             @Override
             public void onClick(View v) {
 
-                  //String postBody = body.getText().toString().trim();
-                  //String image = getEncoded64ImageStringFromBitmap(bitmap);
-//                    String postBody = "Hey You dey";
-//                    String image = "ghasggajhgsjha";
-//                  int mesterId = 1;
-//                  String url = "https://mestapi-staging.herokuapp.com/api/v1/feeds";
-//                  Post post = new Post(postBody, image, mesterId);
-//
 
-                postToApiTwo();
 
+
+
+
+                //TODO:writer a config funtion and hide the credentials
+                Map config = new HashMap();
+                config.put("cloud_name", "truetestar");
+                config.put("api_key",    "379534314459212");
+                config.put("api_secret", "0w6J-go5CQMfSAWqFTpfbFGRrN8");
+                Cloudinary cloudinary = new Cloudinary(config);
+
+
+
+
+                File file = new File(uri.getPath());
+
+                //TODO:wrte a function to get the string url after cloudinary upload
+                try {
+                    Map requesResult  = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
+                    picture = requesResult.get("url").toString();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                String postBody = body.getText().toString().trim();
+                int mesterId = 1;
+                String url = "https://mestapi-staging.herokuapp.com/api/v1/feeds";
+                FeedPost feed = new FeedPost( postBody,  picture, mesterId);
+                //Toast.makeText(v.getContext(), post.getImage(), Toast.LENGTH_LONG).show();
+                //body.setText(post.getImage());
+                postFeedToApiTwo(feed, url);
+                startActivity(new Intent(v.getContext(), MainActivity.class));
 
 
             }
+
+
         });
 
     }
@@ -93,8 +140,12 @@ public class PostActivity extends AppCompatActivity implements IPickResult {
     public void onPickResult(PickResult r) {
         if (r.getError() == null) {
 
-              this.bitmap = r.getBitmap();
-              image.setImageBitmap(r.getBitmap());
+            this.bitmap = r.getBitmap();
+            this.uri = r.getUri();
+            image.setImageBitmap(r.getBitmap());
+
+
+            Toast.makeText(this, r.getUri().toString(), Toast.LENGTH_LONG).show();
 
         } else {
             //Handle possible errors
@@ -125,58 +176,14 @@ public class PostActivity extends AppCompatActivity implements IPickResult {
 
 
 
-    public  void postToApi (final Post post, String url) {
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-        StringRequest sr = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Toast.makeText(PostActivity.this, "Post successful", Toast.LENGTH_LONG).show();
-            }
-
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                Toast.makeText(PostActivity.this, "Post unsuccessful: " + error.toString(), Toast.LENGTH_LONG).show();
-
-            }
-        }){
-//            @Override
-//            protected Map<String,String> getParams(){
-//                Map<String,String> params = new HashMap<String, String>();
-//                params.put("mester_id", String.valueOf(post.getId()));
-//                params.put("picture",   post.getImage());
-//                params.put("body",      post.getBody());
-//
-//
-//                return params;
-//            }
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String,String> params = new HashMap<String, String>();
-                String appToken = getApplication().getResources().getString(R.string.APP_TOKEN);
-                String auth = "Bearer " + appToken;
-                params.put("Authorization: ", auth);
-                return params;
-            }
-        };
-        queue.add(sr);
-
-
-    }
-
-
-
-    public void postToApiTwo(){
+    public void postFeedToApiTwo(FeedPost post, String URL){
 
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL =  "https://mestapi-staging.herokuapp.com/api/v1/feeds";
             JSONObject jsonBody = new JSONObject();
-            jsonBody.put("body", "Android Volley Demo");
-            jsonBody.put("image", "BNK");
-            jsonBody.put("mester_id", "1");
+            jsonBody.put("body",   post.getBody());
+            jsonBody.put("picture",  post.getImage());
+            jsonBody.put("mester_id", String.valueOf(post.getId()));
             final String requestBody = jsonBody.toString();
 
             StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
@@ -230,9 +237,55 @@ public class PostActivity extends AppCompatActivity implements IPickResult {
             e.printStackTrace();
         }
 
+
+
+
+
     }
 
 
+
+
+//    public  void postToApi (final Post post, String url) {
+
+//        RequestQueue queue = Volley.newRequestQueue(this);
+//        StringRequest sr = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
+//            @Override
+//            public void onResponse(String response) {
+//                Toast.makeText(PostActivity.this, "Post successful", Toast.LENGTH_LONG).show();
+//            }
+//
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//
+//                Toast.makeText(PostActivity.this, "Post unsuccessful: " + error.toString(), Toast.LENGTH_LONG).show();
+//
+//            }
+//        }){
+//            @Override
+//            protected Map<String,String> getParams(){
+//                Map<String,String> params = new HashMap<String, String>();
+//                params.put("mester_id", String.valueOf(post.getId()));
+//                params.put("picture",   post.getImage());
+//                params.put("body",      post.getBody());
+//
+//
+//                return params;
+//            }
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                Map<String,String> params = new HashMap<String, String>();
+//                String appToken = getApplication().getResources().getString(R.string.APP_TOKEN);
+//                String auth = "Bearer " + appToken;
+//                params.put("Authorization: ", auth);
+//                return params;
+//            }
+//        };
+//        queue.add(sr);
+
+
+//    }
 
 
 }
